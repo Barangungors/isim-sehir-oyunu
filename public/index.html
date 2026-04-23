@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İsim Şehir - Ultra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="text-white font-sans h-screen flex flex-col antialiased overflow-hidden relative">
+    
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 animated-bg">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <div id="auth-screen" class="flex flex-col items-center justify-center flex-grow z-10 fade-in">
+        <div class="text-center mb-10">
+            <h1 class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 tracking-tighter drop-shadow-2xl logo-glow">İSİM ŞEHİR</h1>
+            <p class="text-indigo-200 mt-2 text-xl tracking-widest font-light">ULTRA EDİTİON</p>
+        </div>
+        
+        <div class="glass-panel p-10 w-full max-w-lg flex flex-col items-center">
+            <h2 class="text-2xl font-semibold mb-6 text-white/90">Oyuncu Profilini Oluştur</h2>
+            
+            <div class="flex gap-4 mb-8" id="avatar-container">
+                <button class="avatar-btn active-avatar" data-avatar="😎">😎</button>
+                <button class="avatar-btn" data-avatar="🤖">🤖</button>
+                <button class="avatar-btn" data-avatar="👾">👾</button>
+                <button class="avatar-btn" data-avatar="👻">👻</button>
+                <button class="avatar-btn" data-avatar="🦊">🦊</button>
+            </div>
+
+            <input type="text" id="username" placeholder="Kullanıcı Adı" class="glass-input w-full text-center text-2xl font-bold mb-6">
+            <button id="login-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 font-bold py-4 rounded-xl transition transform hover:scale-105 shadow-[0_0_15px_rgba(6,182,212,0.5)] text-lg">Sunucuya Bağlan</button>
+        </div>
+    </div>
+
+    <div id="browser-screen" class="hidden flex-col flex-grow z-10 p-8 fade-in h-full">
+        <div class="flex justify-between items-center mb-8 glass-panel p-4 px-8">
+            <div class="flex items-center gap-4">
+                <span id="display-avatar" class="text-4xl">😎</span>
+                <span id="display-username" class="text-2xl font-bold text-cyan-300">Oyuncu</span>
+            </div>
+            <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">OYUN ODALARI</h2>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8 h-[calc(100%-100px)]">
+            <div class="glass-panel p-8 w-full lg:w-1/3 flex flex-col">
+                <h3 class="text-2xl font-bold mb-6 text-fuchsia-400 border-b border-white/10 pb-2"><i class="fa-solid fa-plus mr-2"></i>Yeni Oda Kur</h3>
+                <input type="text" id="create-room-name" placeholder="Oda Adı (Örn: Gece Tayfası)" class="glass-input w-full mb-4">
+                <div class="flex gap-4 mb-4">
+                    <div class="w-1/2">
+                        <label class="block text-sm text-gray-300 mb-1">Kapasite</label>
+                        <select id="create-room-max" class="glass-input w-full [&>option]:bg-gray-800">
+                            <option value="4">4 Oyuncu</option>
+                            <option value="6">6 Oyuncu</option>
+                            <option value="8" selected>8 Oyuncu</option>
+                            <option value="12">12 Oyuncu</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm text-gray-300 mb-1">Şifre (Opsiyonel)</label>
+                        <input type="password" id="create-room-pass" placeholder="Boş bırakılabilir" class="glass-input w-full text-sm">
+                    </div>
+                </div>
+                <button id="create-room-btn" class="mt-auto w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 font-bold py-4 rounded-xl transition shadow-lg text-lg">Odayı Oluştur</button>
+            </div>
+
+            <div class="glass-panel p-8 w-full lg:w-2/3 flex flex-col overflow-hidden">
+                <div class="flex justify-between items-center border-b border-white/10 pb-2 mb-4">
+                    <h3 class="text-2xl font-bold text-cyan-400"><i class="fa-solid fa-server mr-2"></i>Aktif Odalar</h3>
+                    <button id="refresh-rooms-btn" class="text-gray-300 hover:text-white transition"><i class="fa-solid fa-rotate-right"></i> Yenile</button>
+                </div>
+                <div id="room-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden flex-grow flex-col lg:flex-row p-4 gap-4 h-full z-10 fade-in">
+        
+        <div class="glass-panel flex-grow flex flex-col p-6 relative">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <button id="leave-room-btn" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-2 rounded-lg transition"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış</button>
+                    <h2 id="current-room-title" class="text-2xl font-bold text-white">Oda Adı</h2>
+                </div>
+                <div id="room-status-badge" class="bg-indigo-500/30 text-indigo-200 px-4 py-1 rounded-full text-sm font-semibold border border-indigo-500/50">LOBİ</div>
+            </div>
+
+            <div id="lobby-view" class="flex-grow flex flex-col items-center justify-center">
+                <i class="fa-solid fa-users text-6xl text-white/20 mb-4"></i>
+                <h2 class="text-3xl font-bold mb-2 text-white/80">Oyuncular Bekleniyor</h2>
+                <p class="text-white/50 mb-8 text-center max-w-md">Herkes hazır olduğunda host oyunu başlatabilir. Sohbetten konuşabilirsiniz.</p>
+                <button id="start-game-btn" class="hidden bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-bold py-4 px-12 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition transform hover:scale-105 text-xl"><i class="fa-solid fa-play mr-2"></i> OYUNU BAŞLAT</button>
+            </div>
+
+            <div id="playing-view" class="hidden flex-col h-full relative">
+                
+                <div id="letter-reveal-overlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl rounded-xl hidden">
+                    <div id="letter-reveal-box" class="text-center transform scale-0 transition-transform duration-700 ease-out">
+                        <p class="text-xl text-white/70 mb-2 font-light tracking-[0.5em] uppercase">HAZIRLANIN</p>
+                        <div id="big-letter" class="text-[15rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 drop-shadow-[0_0_50px_rgba(250,204,21,0.8)] leading-none">?</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-6 glass-panel-inner p-4 rounded-xl">
+                    <div class="text-center w-1/3">
+                        <span class="text-white/50 text-xs font-bold tracking-widest block mb-1">HARF</span>
+                        <div id="current-letter" class="text-6xl font-black text-yellow-400 drop-shadow-lg">?</div>
+                    </div>
+                    <div class="text-center w-1/3 border-l border-r border-white/10">
+                        <span class="text-white/50 text-xs font-bold tracking-widest block mb-1">SÜRE</span>
+                        <div id="timer" class="text-5xl font-mono font-bold text-white drop-shadow-md">60</div>
+                    </div>
+                    <div class="text-center w-1/3">
+                        <span class="text-white/50 text-xs font-bold tracking-widest block mb-1">TUR</span>
+                        <div class="text-3xl font-bold text-cyan-400">1<span class="text-lg text-white/30">/5</span></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="ans-isim" placeholder="İsim" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-city"></i><input type="text" id="ans-sehir" placeholder="Şehir" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-globe"></i><input type="text" id="ans-ulke" placeholder="Ülke" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-paw"></i><input type="text" id="ans-hayvan" placeholder="Hayvan" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-leaf"></i><input type="text" id="ans-bitki" placeholder="Bitki" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-couch"></i><input type="text" id="ans-esya" placeholder="Eşya" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-briefcase"></i><input type="text" id="ans-meslek" placeholder="Meslek" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-utensils"></i><input type="text" id="ans-yemek" placeholder="Yemek" class="game-input-glass" disabled></div>
+                    <div class="input-group"><i class="fa-solid fa-film"></i><input type="text" id="ans-film" placeholder="Film/Dizi" class="game-input-glass" disabled></div>
+                </div>
+                
+                <button id="submit-answers-btn" class="mt-4 w-full bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/50 font-bold text-xl py-4 rounded-xl transition-all disabled:opacity-50" disabled>CEVAPLARI GÖNDER</button>
+            </div>
+
+            <div id="results-view" class="hidden flex-col h-full items-center">
+                <h2 class="text-4xl font-black mb-8 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 mt-4">TUR SONUÇLARI</h2>
+                <div class="w-full max-w-3xl glass-panel-inner p-2 rounded-2xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-white/50 text-sm border-b border-white/10">
+                                <th class="p-4 font-normal">Sıra</th>
+                                <th class="p-4 font-normal">Oyuncu</th>
+                                <th class="p-4 font-normal text-right">Puan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body"></tbody>
+                    </table>
+                </div>
+                <button id="next-round-btn" class="hidden mt-8 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-4 px-12 rounded-xl transition shadow-lg text-xl"><i class="fa-solid fa-forward-step mr-2"></i> YENİ TUR (Host)</button>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-96 flex flex-col gap-4">
+            <div class="glass-panel p-4 flex-shrink-0">
+                <h3 class="text-sm font-bold tracking-widest text-white/50 mb-3 uppercase flex justify-between"><span><i class="fa-solid fa-users mr-2"></i>Kadro</span><span id="player-count">0/8</span></h3>
+                <ul id="player-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar"></ul>
+            </div>
+            
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden relative">
+                <h3 class="text-sm font-bold tracking-widest text-white/50 p-4 border-b border-white/10 uppercase"><i class="fa-solid fa-comments mr-2"></i>Sohbet</h3>
+                <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4 custom-scrollbar text-sm"></div>
+                <div class="p-3 border-t border-white/10 bg-black/20 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Bir şeyler yaz..." class="glass-input flex-grow text-sm py-2 px-3">
+                    <button id="send-chat" class="bg-indigo-500/40 hover:bg-indigo-500/60 text-white px-4 rounded-lg transition"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="password-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center">
+        <div class="glass-panel p-8 w-96 text-center transform transition-transform scale-95" id="password-modal-content">
+            <i class="fa-solid fa-lock text-4xl text-fuchsia-400 mb-4"></i>
+            <h3 class="text-xl font-bold mb-4">Özel Oda</h3>
+            <p class="text-white/60 text-sm mb-4">Bu odaya katılmak için şifre gerekiyor.</p>
+            <input type="password" id="join-room-password" class="glass-input w-full text-center mb-6" placeholder="Şifreyi girin">
+            <div class="flex gap-2">
+                <button id="cancel-password" class="w-1/2 glass-input hover:bg-white/10 text-white py-2 rounded-lg transition">İptal</button>
+                <button id="confirm-password" class="w-1/2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white py-2 rounded-lg transition font-bold">Giriş Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
